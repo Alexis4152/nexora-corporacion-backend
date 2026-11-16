@@ -1,0 +1,37 @@
+# Compilación
+target/
+*.class
+*.jar
+*.war
+
+# Logs y volcados de la JVM
+*.log
+logs/
+hs_err_pid*.log
+replay_pid*.log
+
+# Archivos subidos (documentos, PDF): viven en APP_STORAGE_DIR (volumen persistente), nunca en git.
+# Ancladas a la raíz (/): sin la barra, "storage/" también ignoraría el paquete de código
+# src/main/java/com/nexora/corp/shared/storage y el build fallaría fuera de esta máquina.
+/data/
+/uploads/
+/storage/
+
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+application-local.properties
+application-local.yml
+
+# IDEs y sistema
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+.claude/
+.DS_Store
+Thumbs.db

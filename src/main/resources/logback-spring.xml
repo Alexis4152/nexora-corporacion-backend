@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Logs a consola con requestId y usuario del MDC. Nunca se registran contraseñas, tokens ni cuerpos de request. -->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <property name="PATTERN"
+              value="%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p [%X{requestId:-}] [u:%X{userId:-}] %-40.40logger{39} : %m%n%wEx"/>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder><pattern>${PATTERN}</pattern><charset>UTF-8</charset></encoder>
+    </appender>
+    <root level="INFO"><appender-ref ref="CONSOLE"/></root>
+</configuration>
