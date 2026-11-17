@@ -33,4 +33,6 @@ PostgreSQL, Flyway. Frontend en `../nexora-corporacion-frontend`. Documentación
 - Atribución por usuario (16-nov-2026, los socios son admins): cotizaciones con `owner_user_id` (filtro "Mis cotizaciones" por
   defecto), clientes con ejecutivo (por defecto quien los crea), suscripciones con `seller_user_id` (V7, editable y auditado) y
   reporte `team-performance` "Desempeño por ejecutivo". Todos los socios ven todo.
-- El usuario escribe en español y hace commits solo cuando lo pide (aún no hay ninguno).
+- El usuario escribe en español y hace commits solo cuando lo pide. Repos en GitHub (`Alexis4152/nexora-corporacion-*`,
+  rama `main`) desplegados en Coolify: `corp.nexorasistemas.com.mx` y `api-corp.nexorasistemas.com.mx` (ver `docs/07-DESPLIEGUE.md`).
+- `docs/sql/planes-base.sql`: carga manual (idempotente) de los planes de la cotización en todos los productos activos.
