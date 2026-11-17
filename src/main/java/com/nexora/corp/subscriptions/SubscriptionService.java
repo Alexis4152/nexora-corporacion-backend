@@ -28,6 +28,7 @@ import com.nexora.corp.subscriptions.SubscriptionDtos.CancelRequest;
 import com.nexora.corp.subscriptions.SubscriptionDtos.ChangePlanRequest;
 import com.nexora.corp.subscriptions.SubscriptionDtos.CreateRequest;
 import com.nexora.corp.subscriptions.SubscriptionDtos.DiscountRequest;
+import com.nexora.corp.subscriptions.SubscriptionDtos.ExtendTrialRequest;
 import com.nexora.corp.subscriptions.SubscriptionDtos.SellerRequest;
 import com.nexora.corp.subscriptions.SubscriptionDtos.TermsRequest;
 import com.nexora.corp.subscriptions.domain.PeriodMath;
@@ -609,6 +610,43 @@ public class SubscriptionService {
         old.put("seller", before);
         audit.record(AuditEntry.success("subscriptions", "SUBSCRIPTION_SELLER_CHANGED", "Subscription", id).before(old)
                 .after(Map.of("seller", r.sellerUserId())).detail(blank(r.reason())).build());
+        return s;
+    }
+
+    /**
+     * Extiende la prueba gratuita hasta {@code trialEndsOn}. También recupera una prueba que ya expiró sin convertirse
+     * (vuelve a TRIAL). Sin cargos ni MRR: solo mueve la fecha; queda en historial y bitácora.
+     */
+    @Transactional
+    public Subscription extendTrial(Long id, ExtendTrialRequest r) {
+        Subscription s = lock(id);
+        boolean expiredTrial = s.getStatus() == SubscriptionStatus.EXPIRED && s.getTrialEndsOn() != null && s.getCurrentPeriodStart() == null;
+        if (s.getStatus() != SubscriptionStatus.TRIAL && !expiredTrial) {
+            throw new BusinessException("Solo se puede extender una prueba gratuita que no se ha convertido a plan pagado");
+        }
+        LocalDate today = settings.today();
+        LocalDate before = s.getTrialEndsOn();
+        LocalDate until = r.trialEndsOn();
+        if (!until.isAfter(before) || until.isBefore(today)) {
+            throw new BusinessException("La nueva fecha debe ser posterior al fin de prueba actual y no puede estar en el pasado");
+        }
+        if (until.isAfter(s.getStartDate().plusYears(1))) {
+            throw new BusinessException("La prueba no puede durar más de un año desde su inicio");
+        }
+        SubscriptionStatus from = s.getStatus();
+        s.setStatus(SubscriptionStatus.TRIAL);
+        s.setTrialEndsOn(until);
+        subscriptions.saveAndFlush(s);
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("from", before.toString());
+        data.put("to", until.toString());
+        if (blank(r.reason()) != null) {
+            data.put("reason", r.reason().trim());
+        }
+        events.record(s, "TRIAL_EXTENDED", from, BigDecimal.ZERO, today, data);
+        audit.record(AuditEntry.success("subscriptions", "SUBSCRIPTION_TRIAL_EXTENDED", "Subscription", id)
+                .before(Map.of("trialEndsOn", before.toString(), "status", from.name()))
+                .after(Map.of("trialEndsOn", until.toString(), "status", s.getStatus().name())).detail(blank(r.reason())).build());
         return s;
     }
 

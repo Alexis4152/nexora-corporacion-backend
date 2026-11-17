@@ -132,7 +132,7 @@ public class SubscriptionQueryService {
         List<String> a = new ArrayList<>();
         switch (SubscriptionStatus.valueOf(r.status())) {
             case PENDING_ACTIVATION -> a.addAll(List.of("ACTIVATE", "CHANGE_PLAN", "CANCEL"));
-            case TRIAL -> a.addAll(List.of("CONVERT_TRIAL", "CHANGE_PLAN", "CANCEL"));
+            case TRIAL -> a.addAll(List.of("CONVERT_TRIAL", "EXTEND_TRIAL", "CHANGE_PLAN", "CANCEL"));
             case ACTIVE, GRACE -> {
                 a.addAll(List.of("CHANGE_PLAN", "DISCOUNT", "SUSPEND", "CANCEL", "TERMS"));
                 if (!r.autoRenew()) {
@@ -142,7 +142,16 @@ public class SubscriptionQueryService {
             case SUSPENDED -> a.addAll(List.of("REACTIVATE", "CANCEL", "TERMS"));
             case CANCEL_SCHEDULED -> a.addAll(List.of("UNDO_CANCEL", "SUSPEND", "CANCEL", "TERMS"));
             case CANCELLED -> a.add("REACTIVATE");
-            case EXPIRED -> a.add(r.currentPeriodStart() == null ? "CONVERT_TRIAL" : "REACTIVATE");
+            case EXPIRED -> {
+                if (r.currentPeriodStart() != null) {
+                    a.add("REACTIVATE");
+                } else {
+                    a.add("CONVERT_TRIAL");
+                    if (r.trialEndsOn() != null) {
+                        a.add("EXTEND_TRIAL");
+                    }
+                }
+            }
         }
         return a;
     }

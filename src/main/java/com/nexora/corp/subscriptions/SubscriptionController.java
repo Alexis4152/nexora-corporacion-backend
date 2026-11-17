@@ -8,6 +8,7 @@ import com.nexora.corp.subscriptions.SubscriptionDtos.CancelRequest;
 import com.nexora.corp.subscriptions.SubscriptionDtos.ChangePlanRequest;
 import com.nexora.corp.subscriptions.SubscriptionDtos.CreateRequest;
 import com.nexora.corp.subscriptions.SubscriptionDtos.DiscountRequest;
+import com.nexora.corp.subscriptions.SubscriptionDtos.ExtendTrialRequest;
 import com.nexora.corp.subscriptions.SubscriptionDtos.ReasonRequest;
 import com.nexora.corp.subscriptions.SubscriptionDtos.SellerRequest;
 import com.nexora.corp.subscriptions.SubscriptionDtos.SubscriptionDetail;
@@ -72,6 +73,12 @@ public class SubscriptionController {
     @PreAuthorize("hasAuthority('subscriptions.update')")
     public ApiResponse<SubscriptionDetail> convert(@PathVariable Long id) {
         return ApiResponse.ok(query.detail(service.convertTrial(id).getId()), "Prueba convertida a plan pagado");
+    }
+
+    @PostMapping("/{id}/extend-trial")
+    @PreAuthorize("hasAuthority('subscriptions.update')")
+    public ApiResponse<SubscriptionDetail> extendTrial(@PathVariable Long id, @Valid @RequestBody ExtendTrialRequest request) {
+        return ApiResponse.ok(query.detail(service.extendTrial(id, request).getId()), "Prueba gratuita extendida");
     }
 
     @PostMapping("/{id}/change-plan")

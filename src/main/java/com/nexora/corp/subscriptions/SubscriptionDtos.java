@@ -45,6 +45,11 @@ public final class SubscriptionDtos {
     public record SellerRequest(@NotNull(message = "Elige el vendedor") Long sellerUserId, @Size(max = 300) String reason) {
     }
 
+    /** Nueva fecha de fin de la prueba gratuita (inclusive). */
+    public record ExtendTrialRequest(@NotNull(message = "Indica la nueva fecha de fin de prueba") LocalDate trialEndsOn,
+                                     @Size(max = 300) String reason) {
+    }
+
     public record ChangePlanRequest(@NotNull Long planId, @NotNull BillingPeriod billingPeriod,
                                     @DecimalMin("0.00") @Digits(integer = 10, fraction = 2) BigDecimal price,
                                     @NotBlank @Pattern(regexp = "^(IMMEDIATE|END_OF_PERIOD)$") String effective) {
